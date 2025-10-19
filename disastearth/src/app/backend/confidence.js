@@ -25,20 +25,17 @@ function Confidence({ onData }) {
         });
 
         const totalWeightedConfidenceRaw = cardData.reduce(
-          (acc, item) => acc + item.confidence * item.support,
-          0
-        );
+          (acc, item) => acc + (item.confidence * item.support), 0);
 
         const averageConfidence = cardData.length > 0
           ? totalWeightedConfidenceRaw / cardData.length
-          : 0;
+          : 1000;
 
-        // Clamp to 0–100 and send to parent
-        const clampedValue = Math.min(Math.max(averageConfidence * 100, 0), 100);
 
-        console.log("Confidence fetched:", averageConfidence, "→ clamped:", clampedValue);
 
-        if (onData) onData(clampedValue);
+        // console.log("Confidence fetched:", averageConfidence, "→ clamped:", clampedValue);
+
+        if (onData) onData(averageConfidence * 100);
       })
       .catch(err => console.error("Fetch error:", err));
   }, [onData]);

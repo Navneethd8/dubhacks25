@@ -1,6 +1,6 @@
 import React from 'react';
 
-const WaffleHouseIndex = ({ n = 0, className = '' }) => {
+const WaffleHouseIndex = ({ n = 1000, className = '' }) => {
 
   let status = '';
   let statusColor = '';
@@ -20,7 +20,7 @@ const WaffleHouseIndex = ({ n = 0, className = '' }) => {
   }
 
   return (
-    <div className={`p-6 rounded-2xl bg-[#452DFA]/85 shadow-lg flex flex-col items-center justify-center text-center mx-auto ${className}`}>
+    <div className={`p-6 rounded-2xl bg-[#452DFA]/35 shadow-lg flex flex-col items-center justify-center text-center mx-auto ${className}`}>
       <h2 className="text-white text-3xl font-extrabold tracking-wide mb-2">
         WAFFLE HOUSE INDEX
       </h2>

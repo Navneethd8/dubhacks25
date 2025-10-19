@@ -42,11 +42,11 @@ const NeedsPages = ({ cardData = [], height = 400, width = 400 }) => {
 
   return (
     <div
-      className="mx-auto p-3 rounded-xl bg-[#452DFA]/85 shadow-2xl flex flex-col"
+      className="mx-auto p-3 rounded-xl bg-[#452DFA]/35 shadow-2xl flex flex-col"
       style={{ width: `${width}px` }}
     >
       <h1 className="text-white text-2xl font-extrabold text-center mb-4 tracking-wide leading-tight flex-shrink-0">
-        CURRENT EVENTS
+        PRIORITY NEEDS
       </h1>
 
       <div

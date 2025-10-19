@@ -32,7 +32,7 @@ const MetricsBox = ({
 
   return (
     // Outer Container: Defines the rounded blue box and its overall size
-    <div className={`py-3 px-2 rounded-2xl bg-[#452DFA]/85 shadow-lg max-w-130 centered-container w-full mx-auto ${className}`}
+    <div className={`py-3 px-2 rounded-2xl bg-[#452DFA]/35 shadow-lg max-w-130 centered-container w-full mx-auto ${className}`}
     style={{ height: `140px`, width: `500px` }} >
       
       {/* Metrics Row: Uses Flexbox to space and wrap the metrics horizontally */}

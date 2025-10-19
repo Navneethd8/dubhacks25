@@ -36,7 +36,7 @@ function TotalsList({ onData }) {
         const metrics = [
           { value: totalItems.toString(), label: "ACTIVE EVENTS", color: "text-red-500" },
           { value: formatNumber(totalPeople), label: "PEOPLE AFFECTED", color: "text-yellow-500" },
-          { value: "1", label: "DAYS SINCE EVENT", color: "text-green-500" },
+          { value: "1", label: "DAY SINCE EVENT", color: "text-green-500" },
         ];
 
         if (onData) onData(metrics);
