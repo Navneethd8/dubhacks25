@@ -98,7 +98,7 @@ export default function Home() {
           <MetricsBox metrics={totalsData} itemWidth='150' itemHeight='100'/>
         </div>
 
-        <div className='fixed top-16 left-15 rounded-2xl bg-[#452DFA]/85 z=-50'>
+        <div className='fixed top-16 left-15 rounded-2xl bg-[#452DFA]/35 z=-50'>
           <Globe/>
         </div>
 
