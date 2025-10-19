@@ -69,7 +69,8 @@ def lambda_handler(event, context):
         # --------------------------
         prompt = f"""
 
-            You are a disaster response analyst AI. Your goal is to read a news article and extract actionable information for disaster response. You should focus on providing **objective, evidence-based assessments** derived from the article.
+            You are a disaster response analyst AI. Your goal is to read a news article and extract actionable information for disaster response. 
+            You should focus on providing **objective, evidence-based assessments** derived from the article.
 
             Article title: {title} Article content: {content}
             **Key Objectives:**
@@ -176,7 +177,6 @@ def lambda_handler(event, context):
             * If the article does not mention a location or numbers, leave location empty or make your best estimate and set a lower confidence score.
             * Prioritize **accuracy, relevance, and evidence-based reasoning**.
             * Respond quickly, as if preparing actionable intelligence for disaster response teams.
-
             """
 
         # --------------------------
