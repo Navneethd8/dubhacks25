@@ -1,2 +1,6 @@
 disastearth/node_modules/
 node_modules/
+scraper/*
+!scraper/requirements.txt
+!scraper/lambda_function.py
+.DS_Store
