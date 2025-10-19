@@ -1,6 +1,6 @@
 import React from 'react';
 
-const WaffleHouseIndex = ({ n = 0, className = '' }) => {
+const WaffleHouseIndex = ({ n = 1000, className = '' }) => {
 
   let status = '';
   let statusColor = '';

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { TextureLoader, ShaderMaterial, Vector2 } from "three";
 import * as solar from "solar-calculator";
@@ -65,6 +65,64 @@ const dayNightShader = {
   `
 };
 
+const exampleEvents = [
+  {
+    id: "1",
+    lat: 34.05,
+    lon: -118.25,
+    name: "Los Angeles",
+    type: "wildfire",
+    severity: 3,
+    contacts: ["911", "LA Fire Department"],
+    timestamp: "2025-10-19T08:00:00Z",
+    peopleAffected: 1200
+  },
+  {
+    id: "2",
+    lat: 29.76,
+    lon: -95.37,
+    name: "Houston",
+    type: "flood",
+    severity: 2,
+    contacts: ["911", "Houston Emergency Services"],
+    timestamp: "2025-10-19T09:30:00Z",
+    peopleAffected: 800
+  },
+  {
+    id: "3",
+    lat: 40.71,
+    lon: -74.01,
+    name: "New York City",
+    type: "hurricane",
+    severity: 4,
+    contacts: ["911", "NYC Emergency Management"],
+    timestamp: "2025-10-19T10:15:00Z",
+    peopleAffected: 5000
+  },
+  {
+    id: "4",
+    lat: 37.77,
+    lon: -122.42,
+    name: "San Francisco",
+    type: "earthquake",
+    severity: 5,
+    contacts: ["911", "San Francisco Emergency Services"],
+    timestamp: "2025-10-19T11:00:00Z",
+    peopleAffected: 3000
+  },
+  {
+    id: "5",
+    lat: 25.76,
+    lon: -80.19,
+    name: "Miami",
+    type: "flood",
+    severity: 1,
+    contacts: ["911", "Miami Emergency Management"],
+    timestamp: "2025-10-19T12:45:00Z",
+    peopleAffected: 600
+  }
+];
+
 // Calculate sun position based on timestamp
 const sunPosAt = (dt) => {
   const day = new Date(+dt).setUTCHours(0,0,0,0);
@@ -82,6 +140,20 @@ export default function DayNightGlobe() {
   const defaultView = { lng: 0, lat: 0 }; // default rotation
   const rotateSpeed = -0.1; // degrees per frame
   const returnSpeed = 0.02; // interpolation speed when returning to default
+
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const modalRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setSelectedEvent(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Animate time
   useEffect(() => {
@@ -125,15 +197,21 @@ export default function DayNightGlobe() {
     if (globeMaterial) globeMaterial.uniforms.globeRotation.value.set(lng, lat);
   }, [globeMaterial]);
 
-  const pointsData = useMemo(() => {
-    const N = 100;
-    return [...Array(N).keys()].map(() => ({
-      lat: (Math.random() - 0.5) * 180,
-      lng: (Math.random() - 0.5) * 360,
-      size: Math.random() / 3,
-      color: ["red", "white", "blue", "green"][Math.round(Math.random() * 3)],
-    }));
-  }, []);
+  const pointsData = exampleEvents.map(event => ({
+    ...event,          // keep all event properties
+    lat: event.lat,    // latitude
+    lng: event.lon,    // longitude (react-globe.gl expects 'lng')
+    size: event.size,         // optional: fixed point size
+    color: (() => {    // color based on disaster type
+      switch (event.type) {
+        case "wildfire": return "red";
+        case "flood": return "blue";
+        case "hurricane": return "green";
+        case "earthquake": return "orange";
+        default: return "white";
+      }
+    })()
+  }));
 
   useEffect(() => {
     let frame;
@@ -183,22 +261,39 @@ export default function DayNightGlobe() {
           width={500}
           height={470}
           pointsData={pointsData}
-          pointAltitude={(d) => d.size}
+          pointAltitude={d => 0.05 + (d.severity ?? 1) * 0.05} // spike height
           pointColor={(d) => d.color}
+          pointRadius={1}
+          pointLabel={d => `<b>${d.name}</b><b>:</b> ${d.type}
+          <br/><b>Severity</b><b>:</b> ${d.severity}`}
+          onPointClick={d => setSelectedEvent(d)}
           backgroundColor="rgba(0,0,0,0)"
           globeMaterial={globeMaterial}
           onZoom={handleZoom}/>
 
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '8px',
-          left: '8px',
-          color: 'lightblue',
-          fontFamily: 'monospace'
-        }}
-      >
-      </div>
+      {selectedEvent && (
+        <div
+          ref={modalRef}
+          style={{
+            position: "absolute",
+            top: 20,
+            left: 20,
+            padding: "12px",
+            background: "rgba(0,0,0,0.8)",
+            color: "white",
+            borderRadius: "8px",
+            zIndex: 1000,
+            maxWidth: "240px"
+          }}
+        >
+          <h3 className="font-extrabold">{selectedEvent.name || "Unknown Location"}</h3>
+          <p><b>Coordinates:</b> {selectedEvent.lat.toFixed(2)}, {selectedEvent.lng.toFixed(2)}</p>
+          <p><b>Type:</b> {selectedEvent.type}</p>
+          <p><b>Severity:</b> {selectedEvent.severity}</p>
+          <p><b>People Affected:</b> {selectedEvent.peopleAffected}</p>
+          <p><b>Contacts:</b> {selectedEvent.contacts.join(", ")}</p>
+        </div>
+      )}
     </div>
   );
 }
