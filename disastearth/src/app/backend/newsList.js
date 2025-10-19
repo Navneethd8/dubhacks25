@@ -9,10 +9,11 @@ function NewsList({ onData }) {
       .then(data => {
         const parsedData = Array.isArray(data) ? data : JSON.parse(data.body || "[]");
 
-        // Transform API data: only take title and summary, ensure summary is a string
+        // Transform API data: only take title and summary and url, ensure summary is a string
         const cardData = parsedData.map(item => ({
           title: item.title || "No Title",
-          summary: typeof item.summary === "string" ? item.summary : ""
+          summary: typeof item.summary === "string" ? item.summary : "",
+          url: item.url || ""
         }));
 
         if (onData) onData(cardData);

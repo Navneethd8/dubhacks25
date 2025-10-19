@@ -1,14 +1,21 @@
 "use client";
 
-import ScrollableCard from './components/scrolling';
+import NewsPages from './components/newsPages';
+import NeedsPages from './components/needsPages';
 import WaffleHouseIndex from './components/waffleHouse';
 import MetricsBox from './components/metricBox';
 import NewsList from './backend/newsList';
+import NeedsList from './backend/needsList';
 import { useState } from "react";
+import TotalsList from './backend/totals';
+import Confidence from './backend/confidence';
 
 
 export default function Home() {
-  const [cardData, setCardData] = useState([]);
+  const [newsData, setNewsData] = useState([]);
+  const [needsData, setNeedsData] = useState([]);
+  const [totalsData, setTotalsData] = useState([]);
+  const [confidence, setConfidence] = useState(0);
 
   
   return (
@@ -67,26 +74,27 @@ export default function Home() {
         </div>
 
         <div className='fixed top-16 right-15'>
-      {/* Fetch news and update cardData */}
-      <NewsList onData={setCardData} />
-
-      {/* Scrollable card receives live API data */}
-      <ScrollableCard cardData={cardData} height={400} width={500} />
-    </div>
-
-        <div className="fixed top-16 right-150">
-          <ScrollableCard height='550' width='240' />
+          {/* Fetch news and update cardData */}
+          <NewsList onData={setNewsData} />
+          {/* Scrollable card receives live API data */}
+          <NewsPages cardData={newsData} height={400} width={560} />
         </div>
 
-        <div className = "fixed bottom-23 right-15 max-w-130 w-full">
-          <WaffleHouseIndex />
+        <div className="fixed top-16 right-157.5">
+          <NeedsList onData={setNeedsData} />
+          <NeedsPages cardData={needsData} height='523' width='240' />
         </div>
+
+        <div className="fixed bottom-23 right-15 max-w-140 w-full">
+          <Confidence onData={(avg) => setConfidence(avg)} />
+          <WaffleHouseIndex n={confidence} />
+        </div>
+
 
         <div className='fixed bottom-23 left-15'>
-          <MetricsBox itemWidth='150' itemHeight='100'/>
+          <TotalsList onData={setTotalsData} />
+          <MetricsBox metrics={totalsData} itemWidth='150' itemHeight='100'/>
         </div>
-
-        <NewsList />
 
       </main>
     </div>
