@@ -68,30 +68,116 @@ def lambda_handler(event, context):
         # Construct Bedrock prompt
         # --------------------------
         prompt = f"""
-Analyze the following news article to determine disaster support needs.
 
-Article title: {title}
-Article content: {content}
+            You are a disaster response analyst AI. Your goal is to read a news article and extract actionable information for disaster response. You should focus on providing **objective, evidence-based assessments** derived from the article.
 
-Identify:
-1. The most relevant location if one exists.
-2. Classify the situation into one of:
-   - Minimal Support
-   - Moderate Support
-   - High Support
-   - Emergency/Critical Support
-3. Estimate priority needs (list the top 3 urgent needs).
-4. Estimate the number of people affected.
+            Article title: {title} Article content: {content}
+            **Key Objectives:**
 
-Respond only in JSON like this:
-{{
-    "location": "<detected or given location>",
-    "support_level": "<one of the above>",
-    "confidence": <number between 0 and 1>,
-    "priority_needs": ["need1", "need2", "need3"],
-    "people_affected": <estimated number>
-}}
-"""
+            1. Identify the **most relevant location** where the disaster is affecting people.
+            2. Assess the **severity of support needed** and classify it into one of four levels:
+
+            * Minimal Support: Minor disruptions, limited impact, basic local assistance may be sufficient.
+            * Moderate Support: Noticeable impact, some infrastructure affected, humanitarian assistance may be required.
+            * High Support: Significant damage, multiple services disrupted, urgent assistance needed.
+            * Emergency/Critical Support: Severe damage, widespread impact, immediate intervention required to save lives.
+            3. Determine the **top 3 urgent needs** such as food, water, medical care, shelter, rescue, communication, or electricity.
+            4. Estimate the **number of people affected**, using explicit data if given, or reasonable approximation if not.
+            5. Assign a **confidence score (0-1)** reflecting how certain you are about your assessment.
+
+            **Guiding Principles:**
+
+            * Only use **information explicitly stated or strongly implied** in the article.
+            * If there is uncertainty, make the **best estimate** and reflect uncertainty in the confidence score.
+            * Focus on clarity and specificity; avoid vague responses like "help needed."
+            * Use context clues from the article: numbers, affected areas, descriptions of damage, quotes from officials, or mentions of casualties.
+
+            ---
+
+            **Step-by-Step Instructions:**
+
+            1. **Location Detection:**
+
+            * Look for city, region, district, or country names.
+            * Prioritize the location that is central to the disaster impact.
+            * If multiple locations are mentioned, choose the one most strongly affected.
+
+            2. **Support Level Classification:**
+
+            * Analyze descriptions of damage, casualties, displacement, or disruption.
+            * Map the severity description to one of the four support levels listed.
+
+            3. **Priority Needs Estimation:**
+
+            * Identify what people urgently require to survive or recover.
+            * List only the top 3 most critical needs.
+
+            4. **People Affected Estimation:**
+
+            * Use explicit numbers in the article if available.
+            * If no exact numbers, infer based on context (e.g., "hundreds displaced," "entire village evacuated").
+
+            5. **Confidence Scoring:**
+
+            * 1.0: Article provides clear, explicit evidence.
+            * 0.7-0.9: Evidence is strong but partially inferred.
+            * 0.4-0.6: Moderate uncertainty, multiple interpretations possible.
+            * <0.4: Highly uncertain, very limited information.
+
+            **Example 1:**
+
+            *Title:* "Floods Devastate Riverside Town"
+            *Content:* "Heavy rains caused the Riverside River to overflow, flooding homes. Around 2,000 residents have been evacuated. Emergency shelters are overwhelmed."
+
+            *Analysis (JSON output):*
+
+            ```json
+            {
+                "location": "Riverside Town",
+                "support_level": "High Support",
+                "confidence": 0.9,
+                "priority_needs": ["shelter", "food", "medical care"],
+                "people_affected": 2000
+            }
+            ```
+
+            **Example 2:**
+
+            *Title:* "Minor Snowstorm Hits Northern Hamlet"
+            *Content:* "The snowstorm caused minor travel delays. No injuries reported."
+
+            *Analysis (JSON output):*
+
+            ```json
+            {
+                "location": "Northern Hamlet",
+                "support_level": "Minimal Support",
+                "confidence": 0.95,
+                "priority_needs": ["road clearance", "heating", "food"],
+                "people_affected": 50
+            }
+            ```
+
+            ---
+
+            Respond only in JSON like this:
+            {{
+                "location": "<detected or given location>",
+                "support_level": "<one of the above>",
+                "confidence": <number between 0 and 1>,
+                "priority_needs": ["need1", "need2", "need3"],
+                "people_affected": <estimated number>
+            }}
+
+            **Additional Guidelines:**
+
+            * Do not include any explanation, text, or commentary outside the JSON.
+            * Ensure the JSON is **syntactically valid** and complete.
+            * If the article does not mention a location or numbers, leave location empty or make your best estimate and set a lower confidence score.
+            * Prioritize **accuracy, relevance, and evidence-based reasoning**.
+            * Respond quickly, as if preparing actionable intelligence for disaster response teams.
+
+            """
 
         # --------------------------
         # Bedrock Model Inference
