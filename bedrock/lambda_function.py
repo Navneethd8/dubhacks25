@@ -1,0 +1,183 @@
+import boto3
+import json
+import re
+from decimal import Decimal  # for DynamoDB numeric fields
+
+# Initialize AWS clients
+ddb = boto3.resource('dynamodb')
+bedrock = boto3.client('bedrock-runtime')
+table = ddb.Table('NewsTable')
+
+
+def extract_json(completion: str, fallback_location="Unknown") -> dict:
+    """
+    Extract the first valid JSON object from model output text.
+    Handles comments, backticks, extra text.
+    """
+    # Remove common comment markers and backticks
+    cleaned = re.sub(r'(```|```json|/\*|\*/)', '', completion, flags=re.MULTILINE).strip()
+
+    # Search for first JSON object {...}
+    match = re.search(r'\{.*?\}', cleaned, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except json.JSONDecodeError:
+            pass
+
+    # fallback if nothing works
+    return {
+        "location": fallback_location,
+        "support_level": "Unknown",
+        "confidence": 0.0,
+        "priority_needs": [],
+        "people_affected": 0
+    }
+
+
+def lambda_handler(event, context):
+    """
+    Triggered by DynamoDB stream events on NewsTable.
+    When a new article is inserted or modified, analyze it using Bedrock (Meta Llama 3)
+    and update the same table with disaster support classification.
+    """
+    print("📥 Received event:", json.dumps(event))
+
+    if 'Records' not in event:
+        print("⚠️ No Records found in event")
+        return {"status": "no_records"}
+
+    for record in event['Records']:
+        if record.get('eventName') not in ('INSERT', 'MODIFY'):
+            continue  # handle both INSERT and MODIFY events
+
+        new_image = record.get('dynamodb', {}).get('NewImage', {})
+
+        url = new_image.get('url', {}).get('S')
+        title = new_image.get('title', {}).get('S', '')
+        content = new_image.get('content', {}).get('S') or new_image.get('summary', {}).get('S', '')
+        location = new_image.get('location', {}).get('S', 'Unknown')
+
+        if not url:
+            print("⚠️ Skipping record with missing URL")
+            continue
+
+        print(f"📰 Processing article: {title} ({url})")
+
+        # --------------------------
+        # Construct Bedrock prompt
+        # --------------------------
+        prompt = f"""
+Analyze the following news article to determine disaster support needs.
+
+Article title: {title}
+Article content: {content}
+
+Identify:
+1. The most relevant location if one exists.
+2. Classify the situation into one of:
+   - Minimal Support
+   - Moderate Support
+   - High Support
+   - Emergency/Critical Support
+3. Estimate priority needs (list the top 3 urgent needs).
+4. Estimate the number of people affected.
+
+Respond only in JSON like this:
+{{
+    "location": "<detected or given location>",
+    "support_level": "<one of the above>",
+    "confidence": <number between 0 and 1>,
+    "priority_needs": ["need1", "need2", "need3"],
+    "people_affected": <estimated number>
+}}
+"""
+
+        # --------------------------
+        # Bedrock Model Inference
+        # --------------------------
+        try:
+            response = bedrock.invoke_model(
+                modelId="meta.llama3-8b-instruct-v1:0",
+                body=json.dumps({
+                    "prompt": prompt,
+                    "max_gen_len": 512,
+                    "temperature": 0.7,
+                    "top_p": 0.9
+                }),
+                contentType="application/json",
+                accept="application/json"
+            )
+
+            model_output = response["body"].read()
+            output_json = json.loads(model_output)
+            completion = (output_json.get("generation") or output_json.get("completion") or "").strip()
+
+            # --------------------------
+            # Extract JSON safely
+            # --------------------------
+            parsed = extract_json(completion, fallback_location=location)
+
+            # Ensure defaults
+            parsed.setdefault('location', location)
+            parsed.setdefault('support_level', 'Unknown')
+            parsed.setdefault('confidence', 0.0)
+            parsed.setdefault('priority_needs', [])
+            parsed.setdefault('people_affected', 0)
+
+            # Convert numeric values safely
+            try:
+                parsed['confidence'] = float(parsed['confidence'])
+            except (ValueError, TypeError):
+                parsed['confidence'] = 0.0
+
+            try:
+                parsed['people_affected'] = int(parsed['people_affected'])
+            except (ValueError, TypeError):
+                parsed['people_affected'] = 0
+
+            print("🔹 Bedrock raw output:", completion)
+            print("🔹 Parsed Bedrock output:", parsed)
+
+        except Exception as e:
+            print(f"❌ Bedrock error: {e}")
+            parsed = {
+                "location": location,
+                "support_level": "Unknown",
+                "confidence": 0.0,
+                "priority_needs": [],
+                "people_affected": 0
+            }
+
+        # --------------------------
+        # Update DynamoDB
+        # --------------------------
+        try:
+            confidence_decimal = Decimal(str(parsed.get("confidence", 0.0)))
+            support_level = parsed.get("support_level") or "Unknown"
+            detected_location = parsed.get("location") or location
+            priority_needs = parsed.get("priority_needs") or []
+            people_affected = parsed.get("people_affected") or 0
+
+            table.update_item(
+                Key={"url": url},
+                UpdateExpression="""
+                    SET support_level = :s,
+                        confidence = :c,
+                        detected_location = :l,
+                        priority_needs = :p,
+                        people_affected = :a
+                """,
+                ExpressionAttributeValues={
+                    ":s": support_level,
+                    ":c": confidence_decimal,
+                    ":l": detected_location,
+                    ":p": priority_needs,
+                    ":a": people_affected
+                },
+            )
+            print(f"✅ Updated article {url} with {parsed}")
+        except Exception as e:
+            print(f"❌ DynamoDB update failed: {e}")
+
+    return {"status": "processed", "records": len(event.get("Records", []))}
