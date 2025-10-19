@@ -11,34 +11,59 @@ const defaultMetrics = [
 ];
 
 /**
- * Renders a stylized box displaying a row of three key metrics.
- * * @param {Array} metrics - Array of objects: { value, label, color }
+ * Renders a stylized box displaying three key metrics (accessed via index).
+ * @param {Array} metrics - Array of 3 objects: { value, label, color }
  * @param {string} className - Optional Tailwind classes for the outer box
  */
 const MetricsBox = ({ metrics = defaultMetrics, className = '' }) => {
+  // Ensure the metrics array has at least 3 elements before trying to access them
+  const m1 = metrics[0] || {};
+  const m2 = metrics[1] || {};
+  const m3 = metrics[2] || {};
+
+  // You can also use a simple check to hide the box if data is completely missing:
+  if (!metrics || metrics.length < 3) {
+    // If you prefer to render nothing when data is incomplete
+    // return null;
+  }
+
   return (
     // Outer Container: Defines the rounded blue box and its size
-    <div className={`p-6 rounded-2xl bg-blue-900 shadow-lg max-w-xl w-full mx-auto ${className}`}>
+    <div className={`p-4.5 rounded-2xl bg-[#452DFA]/30 shadow-lg max-w-xl w-full mx-auto ${className}`}>
       
       {/* Metrics Row: Uses Flexbox to space the metrics horizontally */}
       <div className="flex justify-around items-end w-full mb-4">
         
-        {/* Map through the metrics array to render each data point */}
-        {metrics.map((metric, index) => (
-          // Individual Metric Column: Stacks the number and label vertically
-          <div key={index} className="flex flex-col items-center mx-2">
-            
-            {/* Metric Number (Value) */}
-            <p className={`${metric.color} text-6xl font-extrabold leading-none`}>
-              {metric.value}
-            </p>
-            
-            {/* Metric Label */}
-            <p className="text-white text-sm font-semibold uppercase mt-2">
-              {metric.label}
-            </p>
-          </div>
-        ))}
+        {/* --- Metric 1 (Index 0) --- */}
+        <div className="flex flex-col items-center mx-2">
+          {/* Use bracket notation to access properties */}
+          <p className={`${m1.color || 'text-gray-400'} text-6xl font-extrabold leading-none`}>
+            {m1.value || 'N/A'}
+          </p>
+          <p className="text-white text-sm font-semibold uppercase mt-2">
+            {m1.label || 'METRIC 1'}
+          </p>
+        </div>
+
+        {/* --- Metric 2 (Index 1) --- */}
+        <div className="flex flex-col items-center mx-2">
+          <p className={`${m2.color || 'text-gray-400'} text-6xl font-extrabold leading-none`}>
+            {m2.value || 'N/A'}
+          </p>
+          <p className="text-white text-sm font-semibold uppercase mt-2">
+            {m2.label || 'METRIC 2'}
+          </p>
+        </div>
+
+        {/* --- Metric 3 (Index 2) --- */}
+        <div className="flex flex-col items-center mx-2">
+          <p className={`${m3.color || 'text-gray-400'} text-6xl font-extrabold leading-none`}>
+            {m3.value || 'N/A'}
+          </p>
+          <p className="text-white text-sm font-semibold uppercase mt-2">
+            {m3.label || 'METRIC 3'}
+          </p>
+        </div>
 
       </div>
     </div>

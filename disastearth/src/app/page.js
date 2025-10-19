@@ -1,6 +1,7 @@
 import ScrollableCard from './components/scrolling';
 import WaffleHouseIndex from './components/waffleHouse';
 import MetricsBox from './components/metricBox';
+import InteractiveGlobe from './components/interactiveGlobe';
 
 export default function Home() {
   
@@ -69,6 +70,15 @@ export default function Home() {
 
         <div className = "fixed bottom-23 right-14 max-w-129 w-full">
           <WaffleHouseIndex />
+        </div>
+
+        <div className='fixed bottom-23 left-14'>
+          <MetricsBox/>
+        </div>
+
+        {/* Renders the Globe component with a specific width on the page */}
+        <div className="max-w-4xl mx-auto">
+          <InteractiveGlobe className="border-4 border-blue-500" />
         </div>
 
       </main>
