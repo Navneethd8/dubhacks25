@@ -1,0 +1,4 @@
+scraper/*
+!scraper/requirements.txt
+!scraper/lambda_function.py
+.DS_Store
