@@ -46,7 +46,7 @@ const NeedsPages = ({ cardData = [], height = 400, width = 400 }) => {
       style={{ width: `${width}px` }}
     >
       <h1 className="text-white text-2xl font-extrabold text-center mb-4 tracking-wide leading-tight flex-shrink-0">
-        CURRENT EVENTS
+        PRIORITY NEEDS
       </h1>
 
       <div

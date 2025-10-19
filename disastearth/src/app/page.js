@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
+
 import NewsPages from './components/newsPages';
 import NeedsPages from './components/needsPages';
 import WaffleHouseIndex from './components/waffleHouse';
 import MetricsBox from './components/metricBox';
+import Globe from './components/Globe';
+
 import NewsList from './backend/newsList';
 import NeedsList from './backend/needsList';
-import { useState } from "react";
 import TotalsList from './backend/totals';
 import Confidence from './backend/confidence';
 
@@ -82,7 +85,7 @@ export default function Home() {
 
         <div className="fixed top-16 right-157.5">
           <NeedsList onData={setNeedsData} />
-          <NeedsPages cardData={needsData} height='523' width='240' />
+          <NeedsPages cardData={needsData} height='552' width='240' />
         </div>
 
         <div className="fixed bottom-23 right-15 max-w-140 w-full">
@@ -90,10 +93,13 @@ export default function Home() {
           <WaffleHouseIndex n={confidence} />
         </div>
 
-
         <div className='fixed bottom-23 left-15'>
           <TotalsList onData={setTotalsData} />
           <MetricsBox metrics={totalsData} itemWidth='150' itemHeight='100'/>
+        </div>
+
+        <div className='fixed top-16 left-15 rounded-2xl bg-[#452DFA]/85 z=-50'>
+          <Globe/>
         </div>
 
       </main>
