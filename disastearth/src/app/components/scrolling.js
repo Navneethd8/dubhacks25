@@ -1,90 +1,60 @@
 // ScrollableCard.jsx
+"use client";
 
-"use client"; // Keep this directive for client-side hooks
+import React, { useRef, useEffect, useState } from "react";
+import { useAutoLoopScroll } from "./autoScroll";
 
-import React, { useRef } from 'react';
-import { useAutoLoopScroll } from './autoScroll'; // Ensure the path is correct
+const ScrollableCard = ({ cardData = [], height = 400, width = 400 }) => {
+  const scrollRef = useRef(null);
+  const contentRef = useRef(null);
+  const [contentHeight, setContentHeight] = useState(0);
 
-const ScrollableCard = ({ className = '' }) => { 
-      // 1. Create three separate sets of refs for the three scrollable boxes
-  const scrollRef1 = useRef(null);
-  const contentRef1 = useRef(null);
-  const scrollRef2 = useRef(null);
-  const contentRef2 = useRef(null);
-  const scrollRef3 = useRef(null);
-  const contentRef3 = useRef(null);
-  
-  // 2. Call the custom hook three times to initiate independent scrolling logic
-  const scrollHandlers1 = useAutoLoopScroll(scrollRef1, contentRef1);
-  const scrollHandlers2 = useAutoLoopScroll(scrollRef2, contentRef2);
-  const scrollHandlers3 = useAutoLoopScroll(scrollRef3, contentRef3);
+  // Measure content height for seamless looping
+  useEffect(() => {
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.offsetHeight);
+    }
+  }, [cardData]);
 
-  // Define content for each card
-  const listItems1 = ['Water Bottles', 'Toilet Paper', 'Lumber', 'Emergency Blankets', 'Canned Food', 'First-Aid Kits'];
-  const listItems2 = ['Area A: North Sector', 'Area B: South Dock', 'Area C: West Gate', 'Area D: Central Hub', 'Area E: East Wing', 'Area F: Maintenance'];
-  const listItems3 = ['Shelter Kit (Level 1)', 'Medical Supplies (Level 2)', 'Power Tools (Level 3)', 'Rations (Level 4)', 'Communication Gear (Level 5)', 'Fuel Reserves (Level 6)'];
+  const scrollHandlers = useAutoLoopScroll(scrollRef, contentRef);
 
+  // Render a single card with title and summary as paragraph
+  const renderCard = (title, summary) => (
+    <div className="bg-black rounded-xl p-4 mb-3 shadow-lg w-full">
+      <h2 className="text-white text-md font-bold mb-2">{title}</h2>
+      <p className="text-white text-sm">{summary || "No summary available"}</p>
+    </div>
+  );
 
-  // Helper function to render a list and return its JSX
-  const renderList = (ref, items) => (
-    <ul ref={ref} className="text-white text-sm space-y-1">
-      {items.map((item, index) => (
-        <li key={index}>&rarr; {item}</li>
+  const renderAllCards = (ref) => (
+    <div ref={ref} className="flex flex-col">
+      {cardData.map((data, index) => (
+        <React.Fragment key={index}>
+          {renderCard(data.title, data.summary)}
+        </React.Fragment>
       ))}
-    </ul>
+    </div>
   );
 
   return (
-    <div className='${className} max-w-80 mx-auto px-2 py-3 rounded-xl bg-[#452DFA]/85 shadow-2xl'> 
-      
-      <h1 className="text-white text-2xl font-extrabold text-center mb-2 tracking-wide leading-tight">
+    <div
+      className="mx-auto p-3 rounded-xl bg-[#452DFA]/85 shadow-2xl flex flex-col"
+      style={{ width: `${width}px` }}
+    >
+      <h1 className="text-white text-2xl font-extrabold text-center mb-4 tracking-wide leading-tight flex-shrink-0">
         PRIORITY NEEDS
       </h1>
 
-      {/* --- Card 1: Needs List --- */}
-      <div className="bg-black rounded-xl p-3 mb-3 shadow-lg">
-        <h2 className="text-white text-md font-bold mb-2">SUPPLY NEEDS</h2>
-        <div 
-          className="max-h-[70px] overflow-y-auto hide-scrollbar"
-          ref={scrollRef1} 
-          {...scrollHandlers1} // Apply hover handlers
-        >
-          {renderList(contentRef1, listItems1)} 
-          {renderList(null, listItems1)} {/* Duplicate list for seamless loop */}
-        </div>
+      <div
+        ref={scrollRef}
+        {...scrollHandlers}
+        className="overflow-y-auto hide-scrollbar flex-grow"
+        style={{ height: `${height}px` }}
+      >
+        {renderAllCards(contentRef)}
+        <div style={{ height: `${contentHeight}px` }}>{renderAllCards(null)}</div>
       </div>
-
-      {/* --- Card 2: Location List --- */}
-      <div className="bg-black rounded-xl p-3 mb-3 shadow-lg">
-        <h2 className="text-white text-md font-bold mb-2">DEPLOYMENT AREAS</h2>
-        <div 
-          className="max-h-[70px] overflow-y-auto hide-scrollbar"
-          ref={scrollRef2} 
-          {...scrollHandlers2} // Apply hover handlers
-        >
-          {renderList(contentRef2, listItems2)} 
-          {renderList(null, listItems2)} {/* Duplicate list for seamless loop */}
-        </div>
-      </div>
-
-      {/* --- Card 3: Status List --- */}
-      <div className="bg-black rounded-xl p-3 shadow-lg">
-        <h2 className="text-white text-md font-bold mb-2">STATUS LEVELS</h2>
-        <div 
-          className="max-h-[70px] overflow-y-auto hide-scrollbar"
-          ref={scrollRef3} 
-          {...scrollHandlers3} // Apply hover handlers
-        >
-          {renderList(contentRef3, listItems3)} 
-          {renderList(null, listItems3)} {/* Duplicate list for seamless loop */}
-        </div>
-      </div>
-      
     </div>
-
-    
-
-    
   );
 };
 

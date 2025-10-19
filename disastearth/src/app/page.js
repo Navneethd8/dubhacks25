@@ -1,9 +1,15 @@
+"use client";
+
 import ScrollableCard from './components/scrolling';
 import WaffleHouseIndex from './components/waffleHouse';
 import MetricsBox from './components/metricBox';
-import InteractiveGlobe from './components/interactiveGlobe';
+import NewsList from './backend/newsList';
+import { useState } from "react";
+
 
 export default function Home() {
+  const [cardData, setCardData] = useState([]);
+
   
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
@@ -60,26 +66,27 @@ export default function Home() {
           </svg>
         </div>
 
-        <div className="fixed top-16 right-14">
-          <ScrollableCard className="max-w-80" />
+        <div className='fixed top-16 right-15'>
+      {/* Fetch news and update cardData */}
+      <NewsList onData={setCardData} />
+
+      {/* Scrollable card receives live API data */}
+      <ScrollableCard cardData={cardData} height={400} width={500} />
+    </div>
+
+        <div className="fixed top-16 right-150">
+          <ScrollableCard height='550' width='240' />
         </div>
 
-        <div className="fixed top-16 right-80">
-          <ScrollableCard className="max-w-80" />
-        </div>
-
-        <div className = "fixed bottom-23 right-14 max-w-129 w-full">
+        <div className = "fixed bottom-23 right-15 max-w-130 w-full">
           <WaffleHouseIndex />
         </div>
 
-        <div className='fixed bottom-23 left-14'>
-          <MetricsBox/>
+        <div className='fixed bottom-23 left-15'>
+          <MetricsBox itemWidth='150' itemHeight='100'/>
         </div>
 
-        {/* Renders the Globe component with a specific width on the page */}
-        <div className="max-w-4xl mx-auto">
-          <InteractiveGlobe className="border-4 border-blue-500" />
-        </div>
+        <NewsList />
 
       </main>
     </div>
