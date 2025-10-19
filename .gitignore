@@ -1,3 +1,4 @@
+./node_modules
 scraper/*
 !scraper/requirements.txt
 !scraper/lambda_function.py
