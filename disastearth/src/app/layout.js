@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "DisastEarth",
-  description: "Saving the Eart, One step at a time",
+  description: "Saving the Earth, One step at a time",
 };
 
 export default function RootLayout({ children }) {
